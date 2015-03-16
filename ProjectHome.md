@@ -1,0 +1,1 @@
+Discovery of motif signatures using a set of existing and novel motif discovery algorithms.
