@@ -4,7 +4,7 @@ my $input = "../MD_example.fa";		#input fasta
 my $length = 5;				#kmer length
 my $min_count = 5;			#Minimum total number of occurrences
 my $min_seq = 1;			#Minimum number of sequences in which kmer occurs
-my $hash;
+my $result_hash;
 
 my $current_id = "";
 my $current_sequence = "";
@@ -17,7 +17,11 @@ while(my $rec = <IN>)
 	{
 		if(length($current_sequence) > 0)
 		{
-			$hash->{$current_id} = $current_sequence;
+			for(my $i=0;$i< length($current_sequence) - $length + 1;$i++)
+			{
+				$result_hash->{substr($current_sequence,$i,$length)}->{'COUNT'}++;
+				$result_hash->{substr($current_sequence,$i,$length)}->{'SEQUENCES'}->{$current_id}++;
+			}
 		}
 
 		$rec =~ s/^\>\s*//;
@@ -31,19 +35,10 @@ while(my $rec = <IN>)
 }
 if(length($current_sequence) > 0)
 {
-	$hash->{$current_id} = $current_sequence;
-}
-
-my $result_hash;
-foreach my $id (keys %$hash)
-{
-#	print $id."\n";
-#	print $hash->{$id}."\n";
-
-	for(my $i=0;$i<=length($hash->{$id})-$length;$i++)
+	for(my $i=0;$i<length($current_sequence) - $length + 1;$i++)
 	{
-		$result_hash->{substr($hash->{$id},$i,$length)}->{'COUNT'}++;
-		$result_hash->{substr($hash->{$id},$i,$length)}->{'SEQUENCES'}->{$id} = 1;
+		$result_hash->{substr($current_sequence,$i,$length)}->{'COUNT'}++;
+		$result_hash->{substr($current_sequence,$i,$length)}->{'SEQUENCES'}->{$current_id}++;
 	}
 }
 
@@ -51,7 +46,13 @@ foreach my $kmer (keys %$result_hash)
 {
 	if($result_hash->{$kmer}->{'COUNT'} > 1)
 	{
-		print $kmer."\t".$result_hash->{$kmer}->{'COUNT'}."\t";
-		print scalar(keys %{$result_hash->{$kmer}->{'SEQUENCES'}})."\n";
+		print $kmer."\t".$result_hash->{$kmer}->{'COUNT'};
+		print "\t";
+#		foreach my $seq (keys %{$result_hash->{$kmer}->{'SEQUENCES'}})
+#		{
+#			print "\t".$seq.' ('.$result_hash->{$kmer}->{'SEQUENCES'}->{$seq}.')';
+#		}
+		print scalar(keys %{$result_hash->{$kmer}->{'SEQUENCES'}});
+		print "\n";
 	}
 }
